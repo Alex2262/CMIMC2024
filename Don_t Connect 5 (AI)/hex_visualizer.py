@@ -48,13 +48,23 @@ def prompt_file():
     global board
     global players
     """Create a Tk file dialog and cleanup when finished"""
+
+    '''
     top = tkinter.Tk()
     top.withdraw()  # hide window
     file_name = tkinter.filedialog.askopenfilename(parent=top)
     top.destroy()
+    '''
+
+    # MANUALLY EDIT THE FILE HERE
+    #
+    #
+
+    file_name = "games/1713627862.9248571.json"
 
     with open(file_name, "r") as reader:
         res = json.load(reader)
+
     step = 0
     board = {}
     if res["game"][0][1]:
@@ -71,6 +81,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock()
 
 f = prompt_file()
+
 pygame.display.set_caption(f)
 running = True
 Lcounter = 0
