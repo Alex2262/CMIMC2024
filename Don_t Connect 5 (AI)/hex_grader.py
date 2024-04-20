@@ -33,6 +33,7 @@ bot_list = {
     for name in os.listdir(bot_path)
     if os.path.isfile(os.path.join(bot_path, name))
 }
+
 print("Bots:", list(bot_list.keys()))
 # Running
 
