@@ -2,6 +2,7 @@ import argparse
 from strategy import get_strategies
 import random
 
+
 class BlottoSwarmGame:
     NUM_CASTLES = 10
     GAP_SIZE = 2
@@ -32,11 +33,13 @@ class BlottoSwarmGame:
         assert id in range(self.NUM_SOLDIERS)
 
         soldier_pos = self.soldiers[team][id]
-        ally = [self.board[team][(i + self.board_sz) % self.board_sz] for i in range(soldier_pos-self.VISION_RANGE, soldier_pos+self.VISION_RANGE+1)]
-        enemy = [self.board[1-team][(i + self.board_sz) % self.board_sz] for i in range(soldier_pos-self.VISION_RANGE, soldier_pos+self.VISION_RANGE+1)]
+        ally = [self.board[team][(i + self.board_sz) % self.board_sz] for i in
+                range(soldier_pos - self.VISION_RANGE, soldier_pos + self.VISION_RANGE + 1)]
+        enemy = [self.board[1 - team][(i + self.board_sz) % self.board_sz] for i in
+                 range(soldier_pos - self.VISION_RANGE, soldier_pos + self.VISION_RANGE + 1)]
 
         offset = soldier_pos % (self.GAP_SIZE + 1)
-        if offset == 2: # update this calculation if gap size changes
+        if offset == 2:  # update this calculation if gap size changes
             offset = -1
 
         # negative to go from soldier to castle instead of castle to soldier
@@ -64,20 +67,21 @@ class BlottoSwarmGame:
     def scores(self) -> list:
         return self.pts
 
+
 class BlottoSwarmGrader:
     """
     Blotto Swarm grading class used to locally test a Blotto Swarm submission.
     """
     NUM_DAYS = 100
 
-    def __init__(self, num_games: int = 10, debug = False):
-        self.num_games = num_games # number of games to play per pair of strategies
+    def __init__(self, num_games: int = 10, debug=False):
+        self.num_games = num_games  # number of games to play per pair of strategies
         self.debug = debug
         self.strategies = get_strategies()
 
     def grade(self, strategy1, strategy2):
         scores = [0, 0]
-        for game_num in range(1, self.num_games+1):
+        for game_num in range(1, self.num_games + 1):
             if self.debug and game_num % 100 == 0:
                 print(f"Progress: {game_num} / {self.num_games} | {scores}")
 
@@ -110,30 +114,30 @@ class BlottoSwarmGrader:
             else:
                 scores[0] += 0.5
                 scores[1] += 0.5
-        
+
         return scores
-    
+
     def grade_all(self) -> None:
         """
         Grades all strategies against each other and prints the winrate of each strategy.
         """
         wins = [0] * len(self.strategies)
         for i in range(len(self.strategies)):
-            for j in range(i+1, len(self.strategies)):
+            for j in range(i + 1, len(self.strategies)):
                 if self.debug:
                     print(f"Grading strategies {i} and {j}:")
 
                 scores = self.grade(self.strategies[i], self.strategies[j])
                 wins[i] += scores[0]
                 wins[j] += scores[1]
-        
+
         total_games = self.num_games * len(self.strategies) * (len(self.strategies) - 1) // 2
         self.winrate = [win / total_games for win in wins]
 
     def print_result(self) -> None:
         for i in range(len(self.strategies)):
-            print(f"Strategy {i+1}: {self.winrate[i]}")
-        
+            print(f"Strategy {i + 1}: {self.winrate[i]}")
+
 
 if __name__ == "__main__":
     """
