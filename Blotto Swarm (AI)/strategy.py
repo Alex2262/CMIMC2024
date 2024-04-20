@@ -63,6 +63,65 @@ def strategy(ally: list, enemy: list, offset: int) -> int:
         return 1
 
 
+THRESHOLD = 4
+
+D_PROB = 15  # D_PROB/100 -- Castle Dispersion Probability
+
+
+def strategy2(ally: list, enemy: list, offset: int) -> int:
+
+    # ON A CASTLE
+    if offset % 3 == 0:
+
+        current = ally[3] - enemy[3]
+
+        # disperse allies
+        if current >= THRESHOLD:
+            p = random.randint(0, 100)
+
+            if 0 <= p < D_PROB:
+                return -1
+
+            # Disperse Right
+            if D_PROB <= p < 2 * D_PROB:
+                return 1
+
+        # Stay on the castle to reinforce it
+        return 0
+
+    left = 0
+    right = 0
+
+    # CASTLE IS TO THE LEFT
+    if offset % 3 == 1:
+        left = ally[2] - enemy[2]
+        right = ally[5] - enemy[5]
+
+    # CASTLE IS TO THE RIGHT
+    if offset % 3 == 2:
+        left = ally[1] - enemy[4]
+        right = ally[1] - enemy[4]
+
+    diff = abs(left - right)
+    if left < right:
+        left_prob = 50 + diff * 10
+        r = random.randint(0, 100)
+
+        if r < left_prob:
+            return -1
+        else:
+            return 1
+
+    else:
+        right_prob = 50 + diff * 10
+        r = random.randint(0, 100)
+
+        if r < right_prob:
+            return 1
+        else:
+            return -1
+
+
 def random_strategy(ally: list, enemy: list, offset: int) -> int:
     # A random strategy to use in your game
     return random.randint(-1, 1)
@@ -77,6 +136,6 @@ def get_strategies():
 
     In the official grader, only the first element of the list will be used as your strategy.
     """
-    strategies = [strategy, random_strategy]
+    strategies = [strategy2, random_strategy]
 
     return strategies

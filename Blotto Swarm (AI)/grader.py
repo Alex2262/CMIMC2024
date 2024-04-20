@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Blotto Swarm local runner CLI")
 
-    parser.add_argument("--games", "-g", type=int, default=20)
+    parser.add_argument("--games", "-g", type=int, default=1000)
     parser.add_argument("--debug", "-d", action="store_true")
 
     args = parser.parse_args()
