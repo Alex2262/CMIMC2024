@@ -70,7 +70,7 @@ class BlottoSwarmGrader:
     """
     NUM_DAYS = 100
 
-    def __init__(self, num_games: int = 10, debug = False):
+    def __init__(self, num_games: int = 20, debug = False):
         self.num_games = num_games # number of games to play per pair of strategies
         self.debug = debug
         self.strategies = get_strategies()
