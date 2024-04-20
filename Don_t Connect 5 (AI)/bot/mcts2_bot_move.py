@@ -142,10 +142,9 @@ class Tree:
         self.graph = []
 
 
-EXPLORATION_CONSTANT = 0.7
-MAX_DEPTH = 20
+EXPLORATION_CONSTANT = 0.5
+MAX_DEPTH = 35
 MAX_ITERATIONS = 100_000
-MAX_TIME = 1  # move limit in seconds
 
 
 def hex_to_pixel(x, y, z):
@@ -211,7 +210,7 @@ def print_board(board, move):
 
 class MCTS:
 
-    def __init__(self, board, player):
+    def __init__(self, board, player, allocated_time):
 
         self.board = board
         self.player = player
@@ -221,6 +220,7 @@ class MCTS:
         self.sel_depth = 0
 
         self.root_node_index = 0
+        self.max_time = allocated_time
 
         self.tree = Tree()
 
@@ -470,7 +470,7 @@ class MCTS:
             self.back_propagation(selected_node_index, simulation_result)
 
             if iteration % 256 == 0:
-                if time.time() - self.start_time >= MAX_TIME:
+                if time.time() - self.start_time >= self.max_time:
                     break
 
                 # print(time.time() - self.start_time)
@@ -496,23 +496,25 @@ class MCTS:
         return best_index
 
 
-def mcts_bot_move(board_copy, player):
+def mcts2_bot_move(board_copy, player):
 
-    mcts_engine = MCTS(board_copy, player)
+    n = len(board_copy)
+    allocated_time = max(-1/700 * (n * n) + 2.6, 0.2)
 
-    '''
+    mcts_engine = MCTS(board_copy, player, allocated_time)
+
     print_board(board_copy, None)
     print(score(board_copy))
     print(mcts_engine.get_result(board_copy))
-    '''
+
     best_index = mcts_engine.search()
 
     best_node = mcts_engine.tree.graph[best_index]
 
     move = best_node.last_move
 
-    # print("SEL_DEPTH:", mcts_engine.sel_depth)
-    # print(best_node.win_count, best_node.visits, best_node.win_count / best_node.visits)
+    print("SEL_DEPTH:", mcts_engine.sel_depth)
+    print(best_node.win_count, best_node.visits, best_node.win_count / best_node.visits)
 
     if move.p:
         return None
