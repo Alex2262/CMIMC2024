@@ -10,8 +10,8 @@ NOTE: Each soldier's memory in the final runner will be separate from the others
 WARNING: Do not print anything to stdout. It will break the grading script!
 """
 
-LOWER_BOUND = -12
-UPPER_BOUND = 12
+LOWER_BOUND = -5
+UPPER_BOUND = 5
 
 
 def strategy(ally: list, enemy: list, offset: int) -> int:
@@ -77,6 +77,6 @@ def get_strategies():
 
     In the official grader, only the first element of the list will be used as your strategy.
     """
-    strategies = [strategy, random_strategy, random_strategy]
+    strategies = [strategy, random_strategy]
 
     return strategies
