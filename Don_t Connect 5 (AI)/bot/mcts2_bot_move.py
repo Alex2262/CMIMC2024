@@ -503,18 +503,19 @@ def mcts2_bot_move(board_copy, player):
 
     mcts_engine = MCTS(board_copy, player, allocated_time)
 
+    '''
     print_board(board_copy, None)
     print(score(board_copy))
     print(mcts_engine.get_result(board_copy))
-
+    '''
     best_index = mcts_engine.search()
 
     best_node = mcts_engine.tree.graph[best_index]
 
     move = best_node.last_move
 
-    print("SEL_DEPTH:", mcts_engine.sel_depth)
-    print(best_node.win_count, best_node.visits, best_node.win_count / best_node.visits)
+    # print("SEL_DEPTH:", mcts_engine.sel_depth)
+    # print(best_node.win_count, best_node.visits, best_node.win_count / best_node.visits)
 
     if move.p:
         return None
