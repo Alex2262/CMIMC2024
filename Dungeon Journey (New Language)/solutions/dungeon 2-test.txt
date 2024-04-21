@@ -1,0 +1,17 @@
+
+
+0,0 1,_,_,D % Bob at y = 0 -> 1
+1,0 2,3,_,D % Bob at y = 1 -> 2
+2,0 3,2,_,D % Bob at y = 2 -> 3
+3,0 3,_,L,U % Bob at y = 3 -> 2, Alice sets (0,0) to 2 and moves left, so she will now see 0
+0,2 _,0,_,U % Bob at y = 2 -> 1
+0,3 _,0,R,U % Bob at y = 1 -> 0
+3,3 0,0,R,R % Both move right
+
+1,1 2,2,_,_ % bob found
+
+2,1 _,2,_,_ % bob found
+2,2 _,_,_,_ % stop
+
+3,1 _,2,_,_ % bob found
+3,2 _,_,_,_ % stop

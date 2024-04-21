@@ -1,5 +1,8 @@
 import random
 import networkx as nx
+
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
@@ -75,6 +78,7 @@ def generate_graph(
             for x in layers[i]:
                 pos[x] = (2 * i, mid - x)
         G = edge_list_to_nx(edge_list)
+
         nx.draw(G, pos, with_labels=True)
         plt.savefig(path)
         plt.close()

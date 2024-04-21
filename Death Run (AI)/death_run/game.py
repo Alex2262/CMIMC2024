@@ -12,8 +12,8 @@ def play(
     edge_list: list[tuple[int, int, int]],
     begin: int,
     ends: list[int],
-    criminals: list[tuple[str, BaseCriminal]],
-    students: list[tuple[str, BaseStudent]],
+    criminals: list[tuple[str, RandomCriminal]],
+    students: list[tuple[str, RandomStudent]],
 ):
     """Plays a game of Death Run 2."""
     criminals = [

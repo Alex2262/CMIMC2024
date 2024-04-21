@@ -13,7 +13,10 @@ class BaseStudent:
         :param begin: The label of the vertex which students begin on.
         :param ends: A list of labels of vertices that students may end on (i.e. count as a valid exit).
         """
-        pass
+
+        self.edge_list = edge_list
+        self.begin = begin
+        self.ends = ends
 
     def strategy(
         self,
@@ -28,7 +31,8 @@ class BaseStudent:
         :param current_vertex: The vertex that you are currently on.
         :return: The label of the vertex to move to. The edge (current_vertex, next_vertex) must exist.
         """
-        pass
+
+
 
 
 # Starter strategy
