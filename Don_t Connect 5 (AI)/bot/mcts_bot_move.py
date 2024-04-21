@@ -3,7 +3,7 @@ import time
 
 import math
 
-GRID_RADIUS = 3
+GRID_RADIUS = 4
 coordinates = []
 
 ALL_NEIGHBOR = lambda x1, y1, z1: (
@@ -145,7 +145,7 @@ class Tree:
 EXPLORATION_CONSTANT = 0.7
 MAX_DEPTH = 20
 MAX_ITERATIONS = 100_000
-MAX_TIME = 1  # move limit in seconds
+MAX_TIME = 0.4  # move limit in seconds
 
 
 def hex_to_pixel(x, y, z):
