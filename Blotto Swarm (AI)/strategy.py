@@ -4,6 +4,8 @@ Edit this file! This is the file you will submit.
 
 import random
 
+import math
+
 """
 NOTE: Each soldier's memory in the final runner will be separate from the others.
 
@@ -62,13 +64,12 @@ def strategy(ally: list, enemy: list, offset: int) -> int:
 
         return 1
 
-
-THRESHOLD = 4
-
-D_PROB = 15  # D_PROB/100 -- Castle Dispersion Probability
-
-
 def strategy2(ally: list, enemy: list, offset: int) -> int:
+    THRESHOLD = 2
+    D_PROB = 5  # D_PROB/100 -- Castle Dispersion Probability
+
+    # Strategy 1: 0.6785
+    # Strategy 2: 0.3215
 
     # ON A CASTLE
     if offset % 3 == 0:
@@ -79,11 +80,15 @@ def strategy2(ally: list, enemy: list, offset: int) -> int:
         if current >= THRESHOLD:
             p = random.randint(0, 100)
 
-            if 0 <= p < D_PROB:
+            x = current - THRESHOLD
+
+            dispersion_probability = 22 * math.tanh(1/6 * (x - 5)) + 21
+
+            if 0 <= p < dispersion_probability:
                 return -1
 
             # Disperse Right
-            if D_PROB <= p < 2 * D_PROB:
+            if dispersion_probability <= p < 2 * dispersion_probability:
                 return 1
 
         # Stay on the castle to reinforce it
@@ -104,7 +109,7 @@ def strategy2(ally: list, enemy: list, offset: int) -> int:
 
     diff = abs(left - right)
     if left < right:
-        left_prob = 50 + diff * 10
+        left_prob = 50 + diff * 7
         r = random.randint(0, 100)
 
         if r < left_prob:
@@ -113,13 +118,17 @@ def strategy2(ally: list, enemy: list, offset: int) -> int:
             return 1
 
     else:
-        right_prob = 50 + diff * 10
+        right_prob = 50 + diff * 7
         r = random.randint(0, 100)
 
         if r < right_prob:
             return 1
         else:
             return -1
+
+
+def offset_strategy(alli: list, enemy: list, offset: int) -> int:
+    return offset
 
 
 def random_strategy(ally: list, enemy: list, offset: int) -> int:
@@ -136,6 +145,6 @@ def get_strategies():
 
     In the official grader, only the first element of the list will be used as your strategy.
     """
-    strategies = [strategy2, random_strategy]
+    strategies = [strategy2, offset_strategy]
 
     return strategies
