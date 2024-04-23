@@ -617,7 +617,7 @@ TABLE = {1: 0, 2: 0, 3: 1, 4: 3, 5: 0}
 
 EXPLORATION_CONSTANT = 0.5
 MAX_DEPTH = 20
-MAX_ITERATIONS = 400
+MAX_ITERATIONS = 10000
 
 set_node_coordinates()
 NEIGHBOR_LIST = dict(zip(coordinates, [SELECT_VALID(ALL_NEIGHBOR(*node)) for node in coordinates]))
@@ -631,7 +631,7 @@ real_board = {}
 mcts_engine = MCTS()
 
 
-current_time = 20
+current_time = 24
 moves = 0
 
 predicted_total_moves = 45
@@ -654,10 +654,7 @@ def strategy(board_copy, player):
     mcts_engine.board = board_copy
     mcts_engine.player = player
 
-    #allocated_time = max(current_time / max(12, (predicted_total_moves - moves)) - 0.01, 0.2)
-    allocated_time = 0.1
-
-    # allocated_time = 0.1
+    allocated_time = max(current_time / max(12, (predicted_total_moves - moves)) - 0.05, 0.2)
     # print(allocated_time, current_time)
 
     mcts_engine.max_time = allocated_time

@@ -12,59 +12,15 @@ NOTE: Each soldier's memory in the final runner will be separate from the others
 WARNING: Do not print anything to stdout. It will break the grading script!
 """
 
-LOWER_BOUND = -5
-UPPER_BOUND = 5
+day = 0
 
 
 def strategy(ally: list, enemy: list, offset: int) -> int:
+    # global day
+    # day += 1
 
-    # ON A CASTLE
-    if offset % 3 == 0:
+    # print(day)
 
-        current = ally[3] - enemy[3]
-
-        # DETERMINE A RANGE TO STAY ON THIS CASTLE
-        if LOWER_BOUND <= current <= UPPER_BOUND:
-            return 0
-
-        left = ally[0] - enemy[0]
-        right = ally[6] - enemy[6]
-
-        if LOWER_BOUND <= left <= UPPER_BOUND:
-            return -1
-
-        if LOWER_BOUND <= right <= UPPER_BOUND:
-            return 1
-
-        return 0
-
-    # CASTLE IS TO THE LEFT
-    if offset % 3 == 1:
-        left = ally[2] - enemy[2]
-        right = ally[5] - enemy[5]
-
-        if LOWER_BOUND <= left <= UPPER_BOUND:
-            return -1
-
-        if LOWER_BOUND <= right <= UPPER_BOUND:
-            return 1
-
-        return -1
-
-    # CASTLE IS TO THE RIGHT
-    if offset % 3 == 2:
-        left = ally[1] - enemy[1]
-        right = ally[4] - enemy[4]
-
-        if LOWER_BOUND <= right <= UPPER_BOUND:
-            return 1
-
-        if LOWER_BOUND <= left <= UPPER_BOUND:
-            return -1
-
-        return 1
-
-def strategy2(ally: list, enemy: list, offset: int) -> int:
     THRESHOLD = 2
     D_PROB = 5  # D_PROB/100 -- Castle Dispersion Probability
 
@@ -72,7 +28,11 @@ def strategy2(ally: list, enemy: list, offset: int) -> int:
     # Strategy 2: 0.3215
 
     # ON A CASTLE
-    if offset % 3 == 0:
+    if offset == 0:
+
+        # Close to the end of the game, stay where you are
+        if day >= 98:
+            return 0
 
         current = ally[3] - enemy[3]
 
@@ -97,13 +57,19 @@ def strategy2(ally: list, enemy: list, offset: int) -> int:
     left = 0
     right = 0
 
+    if day >= 99:
+        if offset == 1:
+            return -1
+
+        return 1
+
     # CASTLE IS TO THE LEFT
-    if offset % 3 == 1:
+    if offset == 1:
         left = ally[2] - enemy[2]
         right = ally[5] - enemy[5]
 
     # CASTLE IS TO THE RIGHT
-    if offset % 3 == 2:
+    if offset == -1:
         left = ally[1] - enemy[4]
         right = ally[1] - enemy[4]
 
@@ -145,6 +111,6 @@ def get_strategies():
 
     In the official grader, only the first element of the list will be used as your strategy.
     """
-    strategies = [strategy2, strategy, random_strategy, offset_strategy]
+    strategies = [strategy, random_strategy]
 
     return strategies
