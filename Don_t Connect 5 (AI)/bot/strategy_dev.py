@@ -224,10 +224,14 @@ class MCTS:
     def get_result(self, current_board):
 
         score_dict = score(current_board)
-        result = [-1, -1, -1]
+        result = [0, 0, 0]
 
         small = min(score_dict.values())
         large = max(score_dict.values())
+
+        if small == large:
+            # print(score_dict, result)
+            return [0.5, 0.5, 0.5]
 
         count_large = 0
         count_small = 0
@@ -238,22 +242,27 @@ class MCTS:
             if score_dict[i] == small:
                 count_small += 1
 
-        # First place score
-        large_score = 1 / count_large
+        if count_large == 1:
+            for i in range(3):
+                if score_dict[i] == large:
+                    result[i] = 1
+                elif score_dict[i] == small:
+                    result[i] = 0.5 - (0.5 / count_small)
+                else:
+                    result[i] = 0.5
 
-        # Last place score
-        # Two players are tied at last place receive a very small bonus
-        # Three players tying for last place will not occur, since the first place code will run instead
-        small_score = 0.15 if count_small == 2 else 0
+            # print(score_dict, result)
 
+            return result
+
+        # Two players must be tied here for first
         for i in range(3):
             if score_dict[i] == large:
-                result[i] = large_score
-            elif score_dict[i] == small:
-                result[i] = small_score
+                result[i] += 0.75
             else:
-                result[i] = 0.3
+                result[i] = 0
 
+        # print(score_dict, result)
         return result
 
     def descend_to_root(self, node_index):
@@ -638,7 +647,7 @@ start_time = 0
 current_time -= time.time() - init_time
 
 
-def strategy(board_copy, player):
+def strategy_dev(board_copy, player):
     global current_time, moves, predicted_total_moves, start_time
 
     start_time = time.time()

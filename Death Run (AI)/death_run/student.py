@@ -18,6 +18,9 @@ class BaseStudent:
         self.begin = begin
         self.ends = ends
 
+        self.graph = nx.DiGraph()
+        self.graph.add_weighted_edges_from(edge_list)
+
     def strategy(
         self,
         edge_updates: dict[tuple[int, int], int],
@@ -32,7 +35,74 @@ class BaseStudent:
         :return: The label of the vertex to move to. The edge (current_vertex, next_vertex) must exist.
         """
 
+        k_shortest_paths = 10
 
+        for edge in list(self.graph.edges):
+            edge_key = (edge[0], edge[1])
+
+            if edge_key in edge_updates:
+                self.graph[edge[0]][edge[1]]["weight"] += edge_updates[edge_key]
+
+        best_weight = 0
+        best_path = None
+
+        short_paths = []
+
+        # print("CALLED")
+        for end in self.ends:
+
+            if not nx.has_path(self.graph, current_vertex, end):
+                continue
+
+            # print("WOAH", best_path, best_weight, end)
+            # print(current_vertex, self.graph)
+            paths = nx.shortest_simple_paths(self.graph, current_vertex, end, weight="weight")
+            # print("GOT PATHS")
+            path_to_end = None
+            curr_weight = 0
+
+            paths_checked = 0
+
+            for path in paths:
+
+                if paths_checked > k_shortest_paths:
+                    break
+
+                short_paths.append(path)
+
+                # print("CHECKING PATHS???", path)
+                works = True
+
+                for i in range(1, len(path)):
+                    if self.graph.out_degree(path[i]) < 2:
+                        works = False
+                        break
+
+                if not works:
+                    paths_checked += 1
+                    continue
+
+                path_to_end = path
+                break
+
+            if path_to_end is None:
+                continue
+
+            for i in range(1, len(path_to_end)):
+                curr_weight += self.graph[path_to_end[i - 1]][path_to_end[i]]["weight"]
+
+            if best_path is None or curr_weight < best_weight:
+                best_path = path_to_end
+                best_weight = curr_weight
+
+        # print("HI", best_weight, best_path)
+
+        # We fucked up!!!!
+        # We will simply choose the shortest path now.
+        if best_path is None:
+            return short_paths[0][1]
+
+        return best_path[1]
 
 
 # Starter strategy

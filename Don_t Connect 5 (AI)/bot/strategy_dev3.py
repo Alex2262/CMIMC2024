@@ -4,7 +4,7 @@ import time
 import math
 
 
-GAME_TIME = 10
+GAME_TIME = 13
 
 
 init_time = time.time()
@@ -118,6 +118,8 @@ def get_diameter(board, start_node, visit: dict, use_visit):
 
     connected = dict()
     con(start_node)
+
+    # print(connected)
     if len(connected) <= 3:  # must be a line
         return len(connected)
     if 4 <= len(connected) <= 5:  # a star if we have a deg-3 node, a line otherwise
@@ -128,12 +130,19 @@ def get_diameter(board, start_node, visit: dict, use_visit):
         three = list(connected.values())
         if 3 in connected.values():
             three.remove(3)
-            if 3 in three:
+            if 3 in connected.values():
                 return 4  # this is a shape x - x - x - x
                 #                     x   x
         return 5  # diameter is 5 otherwise
+
     # For the larger(>6) ones, diameter must be larger than 5 so we just return 5
     return 5
+
+    # maxl = 0
+
+    # for node in connected:
+    #     maxl = max(maxl, dfs(node))
+    # return maxl
 
 
 def score(board):  # return current score for each player
@@ -324,16 +333,13 @@ class MCTS:
                         bonus = -1
 
                     elif adjacent_friend is not None:
-                        old_diameter = get_diameter(self.board, adjacent_friend, {}, False)
-                        if old_diameter <= 3:
-                            bonus += 0.2
-                            if d > old_diameter:
-                                bonus += 0.1
+                        if get_diameter(self.board, adjacent_friend, {}, False) <= 3:
+                            bonus += 0.3
                         else:
                             bonus -= 0.15
 
-                    # if d <= 2:
-                    #     bonus += 0.01 * len(enemies)
+                    if d <= 2:
+                        bonus += 0.01 * len(enemies)
 
                 # UCT ALGORITHM
                 exploitation_value = child_node.win_count / child_node.visits
@@ -628,7 +634,7 @@ real_board = {}
 mcts_engine = MCTS()
 
 
-current_time = GAME_TIME - 6
+current_time = GAME_TIME - 9
 moves = 0
 
 predicted_total_moves = 45
@@ -638,7 +644,7 @@ start_time = 0
 current_time -= time.time() - init_time
 
 
-def strategy(board_copy, player):
+def strategy_dev3(board_copy, player):
     global current_time, moves, predicted_total_moves, start_time
 
     start_time = time.time()

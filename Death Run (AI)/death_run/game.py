@@ -13,7 +13,7 @@ def play(
     begin: int,
     ends: list[int],
     criminals: list[tuple[str, RandomCriminal]],
-    students: list[tuple[str, RandomStudent]],
+    students: list[tuple[str, BaseStudent]],
 ):
     """Plays a game of Death Run 2."""
     criminals = [
@@ -124,8 +124,10 @@ def play(
 if __name__ == "__main__":
     edge_list, begin, ends = generate_graph((15, 8), (1, 10), path="game.png")
 
-    criminals = [("Random Criminal #1", RandomCriminal)]
-    students = [("Random Student #1", RandomStudent)]
+    criminals = [("Base Criminal #1", BaseCriminal), ("Random Criminal #2", RandomCriminal)]
+    students = [("Base Student #1", BaseStudent), ("Base Student #2", BaseStudent), ("Base Student #3", BaseStudent),
+                ("Random Student #1", RandomStudent), ("Random Student #2", RandomStudent),
+                ("Random Student #3", RandomStudent)]
 
     criminal_scores, student_scores = play(edge_list, begin, ends, criminals, students)
 
