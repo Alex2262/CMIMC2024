@@ -60,7 +60,7 @@ def prompt_file():
     #
     #
 
-    file_name = "games/1713668073.279907.json"
+    file_name = "games/test.json"
 
     with open(file_name, "r") as reader:
         res = json.load(reader)

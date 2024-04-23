@@ -4,6 +4,8 @@ import time
 import math
 from collections import deque
 
+init_time = time.time()
+
 GRID_RADIUS = 4
 coordinates = []
 
@@ -219,7 +221,6 @@ class MCTS:
         self.board = {}
         self.player = 0
 
-        self.start_time = 0
         self.iterations = 0
         self.sel_depth = 0
 
@@ -446,7 +447,6 @@ class MCTS:
 
     def search(self):
         self.sel_depth = 0
-        self.start_time = time.time()
 
         selected_node_index = self.root_node_index
 
@@ -466,7 +466,7 @@ class MCTS:
             n_children = selected_node.children_end - \
                          selected_node.children_start
 
-            if n_children <= 0 and selected_node.visits >= 2:
+            if (n_children <= 0 and selected_node.visits >= 2) or selected_node_index == self.root_node_index:
                 self.expansion(selected_node_index)
 
             # New leaf selected node index, make the corresponding move
@@ -490,9 +490,8 @@ class MCTS:
             # print("Back Propagation")
             self.back_propagation(selected_node_index, simulation_result)
 
-            if self.iterations % 20 == 0:
-                if time.time() - self.start_time >= self.max_time:
-                    break
+            if self.iterations >= 30 and time.time() - start_time >= self.max_time:
+                break
 
                 # print(time.time() - self.start_time)
                 # print(self.iterations, self.sel_depth, len(self.tree.graph))
@@ -516,6 +515,7 @@ class MCTS:
 
         return best_index
 
+    '''
     def flatten_tree(self):
 
         copy_graph = [x.copy() for x in tree.graph]
@@ -610,13 +610,14 @@ class MCTS:
 
             tree.graph.append(Node(-1, Move(0, 0, 0, True), 0))
             self.root_node_index = len(tree.graph) - 1
+    '''
 
 
 TABLE = {1: 0, 2: 0, 3: 1, 4: 3, 5: 0}
 
 EXPLORATION_CONSTANT = 0.5
-MAX_DEPTH = 60
-MAX_ITERATIONS = 100_000
+MAX_DEPTH = 20
+MAX_ITERATIONS = 400
 
 set_node_coordinates()
 NEIGHBOR_LIST = dict(zip(coordinates, [SELECT_VALID(ALL_NEIGHBOR(*node)) for node in coordinates]))
@@ -630,44 +631,66 @@ real_board = {}
 mcts_engine = MCTS()
 
 
-def mcts2_bot_move(board_copy, player):
+current_time = 20
+moves = 0
+
+predicted_total_moves = 45
+start_time = 0
+
+
+current_time -= time.time() - init_time
+
+
+def strategy(board_copy, player):
+    global current_time, moves, predicted_total_moves, start_time
+
+    start_time = time.time()
+
+    tree.graph = []
+    tree.graph.append(Node(-1, Move(0, 0, 0, True), 0))  # Root node
+
+    mcts_engine.root_node_index = 0
 
     mcts_engine.board = board_copy
     mcts_engine.player = player
 
-    n = len(board_copy)
+    #allocated_time = max(current_time / max(12, (predicted_total_moves - moves)) - 0.01, 0.2)
+    allocated_time = 0.1
 
-    allocated_time = max(-1/2500 * (n * n) + 1.3, 0.3)
+    # allocated_time = 0.1
+    # print(allocated_time, current_time)
+
     mcts_engine.max_time = allocated_time
 
-    mcts_engine.update_tree(board_copy, player)
-    mcts_engine.flatten_tree()
+    # print_board(board_copy, None)
+    # print(score(board_copy))
+    # print(mcts_engine.get_result(board_copy))
 
-    '''
-    print_board(board_copy, None)
-    print(score(board_copy))
-    print(mcts_engine.get_result(board_copy))
-
-    print("IPS: ", mcts_engine.iterations / allocated_time, mcts_engine.iterations, allocated_time)
-    '''
+    # print("IPS: ", mcts_engine.iterations / allocated_time, mcts_engine.iterations, allocated_time)
 
     best_index = mcts_engine.search()
 
-    best_node = tree.graph[best_index]
+    # print("ITERATIONS: ", mcts_engine.iterations)
 
+    best_node = tree.graph[best_index]
     move = best_node.last_move
-    mcts_engine.root_node_index = best_index
+
+    # mcts_engine.root_node_index = best_index
 
     '''
     print(mcts_engine.root_node_index, tree.graph[mcts_engine.root_node_index].children_start, 
           tree.graph[mcts_engine.root_node_index].children_end)
     '''
     # print("SEL_DEPTH:", mcts_engine.sel_depth)
-
     # print(best_node.win_count, best_node.visits, best_node.win_count / best_node.visits)
+    # print(move.get_key(), move.p)
+
+    moves += 1
+
+    current_time -= (time.time() - start_time)
 
     if move.p:
-        real_board[move.get_key] = player
+        # real_board[move.get_key] = player
         return None
 
     return move.get_key()

@@ -80,4 +80,5 @@ def simple_bot_move(board_copy, player):
     if len(empty_nodes)==0:
         return None
     # Choose a random move
-    return random.choice(empty_nodes)
+    # return random.choice(empty_nodes)
+    return None

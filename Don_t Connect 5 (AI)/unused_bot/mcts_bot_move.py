@@ -145,7 +145,7 @@ class Tree:
 EXPLORATION_CONSTANT = 0.7
 MAX_DEPTH = 20
 MAX_ITERATIONS = 100_000
-MAX_TIME = 0.4  # move limit in seconds
+MAX_TIME = 0.3  # move limit in seconds
 
 
 def hex_to_pixel(x, y, z):
@@ -469,9 +469,8 @@ class MCTS:
             # print("Back Propagation")
             self.back_propagation(selected_node_index, simulation_result)
 
-            if iteration % 256 == 0:
-                if time.time() - self.start_time >= MAX_TIME:
-                    break
+            if time.time() - self.start_time >= MAX_TIME:
+                break
 
                 # print(time.time() - self.start_time)
                 # print(iteration, self.sel_depth, len(self.tree.graph))
@@ -496,7 +495,7 @@ class MCTS:
         return best_index
 
 
-def mcts_bot_move(board_copy, player):
+def strategy(board_copy, player):
 
     mcts_engine = MCTS(board_copy, player)
 
