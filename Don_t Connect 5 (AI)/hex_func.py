@@ -1,4 +1,4 @@
-import pygame
+# import pygame
 import math
 import random
 import time
@@ -170,3 +170,51 @@ def run_game(bot_list):
         current_player_idx = (current_player_idx + 1) % len(players)
 
     return res
+
+
+def run_game_process(bot_list, res_queue):
+    player_list = list(bot_list.keys())
+    funcs = list(bot_list.values())
+
+    # Initialize the game state
+    free_coordinates = node_coordinates.copy()
+    board = {}  # Dictionary to track the state of the board
+    players = ["white", "black", "red"]  # List of players
+    players2id = {"white": 0, "black": 1, "red": 2}  # Players to ID
+    current_player_idx = 0  # Index to keep track of the current player
+    res = {"name": player_list, "scores": None, "game": []}  # For recording the results
+
+    running = True
+
+    ### implement early ending when all players choose not to move
+
+    stop_count = 0
+
+    while running:
+        if (
+            stop_count >= 3 or len(free_coordinates) == 0
+        ):  # game ends without valid move
+            scores = score(board)
+            res["scores"] = scores
+            break
+        board_copy = copy.deepcopy(board)
+        curfunc = funcs[current_player_idx]
+        bot_move = curfunc(board_copy, current_player_idx)
+        if (
+            bot_move and isinstance(bot_move, tuple) and bot_move in free_coordinates
+        ):  # If valid move
+            # print(f"bot {current_player_idx} moves at {bot_move}")
+            board[bot_move] = current_player_idx
+            free_coordinates.remove(bot_move)
+            scores = score(board)
+            res["game"].append([current_player_idx, bot_move, scores])
+            stop_count = 0
+        else:  # If not valid move, pass
+            # print(f"{players[current_player_idx]} is not making a valid move!")
+            scores = score(board)
+            res["game"].append([current_player_idx, None, scores])
+            stop_count += 1
+
+        current_player_idx = (current_player_idx + 1) % len(players)
+
+    res_queue.put(res)

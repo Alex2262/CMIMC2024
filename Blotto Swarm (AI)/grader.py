@@ -86,7 +86,7 @@ class BlottoSwarmGrader:
                 print(f"Progress: {game_num} / {self.num_games} | {scores}")
 
             game = BlottoSwarmGame()
-            for _ in range(self.NUM_DAYS):
+            for day in range(1, self.NUM_DAYS + 1):
                 moves = [[], []]
                 for team, strategy in enumerate([strategy1, strategy2]):
                     for i in range(BlottoSwarmGame.NUM_SOLDIERS):
