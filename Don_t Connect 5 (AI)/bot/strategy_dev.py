@@ -19,7 +19,7 @@ class Move:
         self.p = passing
 
     def get_key(self):
-        return (self.x, self.y, self.z)
+        return self.x, self.y, self.z
 
 
 class Node:
@@ -30,7 +30,7 @@ class Node:
         self.children_end = 0
 
         self.win_count = 0
-        self.visits = 1
+        self.visits = 0
 
         self.last_move = last_move
 
@@ -130,7 +130,7 @@ def get_diameter(board, start_node, visit: dict, use_visit):
                 return 4  # this is a shape x - x - x - x
                 #                     x   x
         return 5  # diameter is 5 otherwise
-    # For the larger(>6) ones, diameter must be larger than 5 so we just return 5
+    # For the larger(>6) ones, diameter must be larger than 5, so we just return 5
     return 5
 
 
@@ -159,6 +159,12 @@ BLACK_COLOR = "\033[30m"
 RED_COLOR = "\033[31m"
 WHITE_COLOR = "\033[97m"
 GREEN_COLOR = "\033[32m"
+
+
+def softmax(x):
+    e_x = [math.exp(i) for i in x]
+    sum_e_x = sum(e_x)
+    return [i / sum_e_x for i in e_x]
 
 
 def print_board(board, move):
@@ -217,52 +223,6 @@ class MCTS:
 
         self.root_node_index = 0
         self.max_time = 1
-
-    '''
-    def get_result(self, current_board):
-
-        score_dict = score(current_board)
-        result = [0, 0, 0]
-
-        small = min(score_dict.values())
-        large = max(score_dict.values())
-
-        if small == large:
-            # print(score_dict, result)
-            return [0.5, 0.5, 0.5]
-
-        count_large = 0
-        count_small = 0
-
-        for i in range(3):
-            if score_dict[i] == large:
-                count_large += 1
-            if score_dict[i] == small:
-                count_small += 1
-
-        if count_large == 1:
-            for i in range(3):
-                if score_dict[i] == large:
-                    result[i] = 1
-                elif score_dict[i] == small:
-                    result[i] = 0.5 - (0.5 / count_small)
-                else:
-                    result[i] = 0.5
-
-            # print(score_dict, result)
-
-            return result
-
-        # Two players must be tied here for first
-        for i in range(3):
-            if score_dict[i] == large:
-                result[i] += 0.75
-            else:
-                result[i] = 0
-
-        # print(score_dict, result)
-        return result
-    '''
 
     def get_result(self, current_board):
 
@@ -323,16 +283,19 @@ class MCTS:
             if n_children <= 0:
                 break
 
-            best_uct = -100000.0
+            best_puct = -100000.0
 
-            # SELECTING BEST CHILD
+            policies = [10] * n_children
+
             for i in range(n_children):
+
+                policy = 10
+
                 child_node_index = leaf_node.children_start + i
                 child_node = tree.graph[child_node_index]
 
                 # SILLY BONUSES / COEFFICIENTS FOR MOVE TYPES
                 move = child_node.last_move
-
                 neighbors = SELECT_VALID(ALL_NEIGHBOR(*move.get_key()))
                 empty_count = 0
 
@@ -350,48 +313,58 @@ class MCTS:
                     else:
                         enemies.append(neighbor)
 
-                coef = 0.8
-                bonus = -0.3
-
                 if not move.p:
                     self.board[move.get_key()] = self.player
                     d = get_diameter(self.board, move.get_key(), {}, False)
                     del self.board[move.get_key()]
 
-                    coef = 1
-
-                    bonus = 0.05 * empty_count
+                    policy += 0.3 * empty_count
 
                     if d >= 5:
-                        coef = 0.5
-                        bonus = -10
+                        policy = 0
 
                     elif adjacent_friend is not None:
 
                         old_diameter = get_diameter(self.board, adjacent_friend, {}, False)
                         if old_diameter <= 3:
                             if d > old_diameter:
-                                bonus += 0.1
+                                policy += 0.8
                                 if d == 4 or empty_count >= 1:
-                                    bonus += 0.2
+                                    policy += 2
 
                             elif d <= old_diameter:
-                                bonus -= 0.1
+                                policy -= 1
                         else:
-                            bonus -= min(0.2 + 0.01 * empty_count - 0.03 * len(enemies), 0)
+                            policy -= min(1 + 0.2 * empty_count - 0.4 * len(enemies), 0)
 
                     else:
-                        bonus += 0.02 * len(enemies)
+                        policy += 0.2 * len(enemies)
 
-                # UCT ALGORITHM
-                exploitation_value = child_node.win_count / child_node.visits
-                exploration_value = math.sqrt(math.log(leaf_node.visits) / child_node.visits)
+                else:
+                    policy = 6
 
-                uct_value = coef * (exploitation_value + EXPLORATION_CONSTANT * exploration_value) + bonus
+                policies[i] = policy
 
-                if uct_value > best_uct:
+            # print(policies)
+            policies = softmax(policies)
+
+            # SELECTING BEST CHILD
+            for i in range(n_children):
+                child_node_index = leaf_node.children_start + i
+                child_node = tree.graph[child_node_index]
+
+                exploration_score = EXPLORATION_CONSTANT * math.sqrt(leaf_node.visits)
+                prior_score = policies[i] * (exploration_score / (1 + child_node.visits))
+
+                value_score = 0 if child_node.visits == 0 else \
+                              child_node.win_count / child_node.visits
+
+                puct = EXPLORATION_CONSTANT * policies[i] + 0.5 if child_node.visits == 0 else \
+                       prior_score + value_score
+
+                if puct > best_puct:
                     leaf_node_index = child_node_index
-                    best_uct = uct_value
+                    best_puct = puct
 
             last_move = tree.graph[leaf_node_index].last_move
 
@@ -511,7 +484,7 @@ class MCTS:
             n_children = selected_node.children_end - \
                          selected_node.children_start
 
-            if (n_children <= 0 and selected_node.visits >= 2) or selected_node_index == self.root_node_index:
+            if (n_children <= 0 and selected_node.visits >= 1) or selected_node_index == self.root_node_index:
                 self.expansion(selected_node_index)
 
             # New leaf selected node index, make the corresponding move
@@ -660,7 +633,7 @@ class MCTS:
 
 TABLE = {1: 0, 2: 0, 3: 1, 4: 3, 5: 0}
 
-EXPLORATION_CONSTANT = 0.3
+EXPLORATION_CONSTANT = 1.41
 MAX_DEPTH = 30
 MAX_ITERATIONS = 10000
 
@@ -683,7 +656,7 @@ start_time = 0
 # current_time -= time.time() - init_time
 
 
-def strategy(board_copy, player):
+def strategy_dev(board_copy, player):
     global current_time, move_count, predicted_total_moves, start_time
 
     start_time = time.time()

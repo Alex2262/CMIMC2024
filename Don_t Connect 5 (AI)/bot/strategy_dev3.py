@@ -3,7 +3,9 @@ import time
 
 import math
 
-GAME_TIME = 10
+
+GAME_TIME = 13
+
 
 init_time = time.time()
 
@@ -116,6 +118,8 @@ def get_diameter(board, start_node, visit: dict, use_visit):
 
     connected = dict()
     con(start_node)
+
+    # print(connected)
     if len(connected) <= 3:  # must be a line
         return len(connected)
     if 4 <= len(connected) <= 5:  # a star if we have a deg-3 node, a line otherwise
@@ -126,12 +130,19 @@ def get_diameter(board, start_node, visit: dict, use_visit):
         three = list(connected.values())
         if 3 in connected.values():
             three.remove(3)
-            if 3 in three:
+            if 3 in connected.values():
                 return 4  # this is a shape x - x - x - x
                 #                     x   x
         return 5  # diameter is 5 otherwise
+
     # For the larger(>6) ones, diameter must be larger than 5 so we just return 5
     return 5
+
+    # maxl = 0
+
+    # for node in connected:
+    #     maxl = max(maxl, dfs(node))
+    # return maxl
 
 
 def score(board):  # return current score for each player
@@ -162,6 +173,7 @@ GREEN_COLOR = "\033[32m"
 
 
 def print_board(board, move):
+
     mat = [[-2 for _ in range(23)] for _ in range(43)]
 
     for coord in coordinates:
@@ -217,52 +229,6 @@ class MCTS:
 
         self.root_node_index = 0
         self.max_time = 1
-
-    '''
-    def get_result(self, current_board):
-
-        score_dict = score(current_board)
-        result = [0, 0, 0]
-
-        small = min(score_dict.values())
-        large = max(score_dict.values())
-
-        if small == large:
-            # print(score_dict, result)
-            return [0.5, 0.5, 0.5]
-
-        count_large = 0
-        count_small = 0
-
-        for i in range(3):
-            if score_dict[i] == large:
-                count_large += 1
-            if score_dict[i] == small:
-                count_small += 1
-
-        if count_large == 1:
-            for i in range(3):
-                if score_dict[i] == large:
-                    result[i] = 1
-                elif score_dict[i] == small:
-                    result[i] = 0.5 - (0.5 / count_small)
-                else:
-                    result[i] = 0.5
-
-            # print(score_dict, result)
-
-            return result
-
-        # Two players must be tied here for first
-        for i in range(3):
-            if score_dict[i] == large:
-                result[i] += 0.75
-            else:
-                result[i] = 0
-
-        # print(score_dict, result)
-        return result
-    '''
 
     def get_result(self, current_board):
 
@@ -350,8 +316,8 @@ class MCTS:
                     else:
                         enemies.append(neighbor)
 
-                coef = 0.8
-                bonus = -0.3
+                coef = 0.6
+                bonus = 0
 
                 if not move.p:
                     self.board[move.get_key()] = self.player
@@ -360,28 +326,20 @@ class MCTS:
 
                     coef = 1
 
-                    bonus = 0.05 * empty_count
+                    bonus = 0.025 * empty_count
 
                     if d >= 5:
-                        coef = 0.5
-                        bonus = -10
+                        coef = 0.01
+                        bonus = -1
 
                     elif adjacent_friend is not None:
-
-                        old_diameter = get_diameter(self.board, adjacent_friend, {}, False)
-                        if old_diameter <= 3:
-                            if d > old_diameter:
-                                bonus += 0.1
-                                if d == 4 or empty_count >= 1:
-                                    bonus += 0.2
-
-                            elif d <= old_diameter:
-                                bonus -= 0.1
+                        if get_diameter(self.board, adjacent_friend, {}, False) <= 3:
+                            bonus += 0.3
                         else:
-                            bonus -= min(0.2 + 0.01 * empty_count - 0.03 * len(enemies), 0)
+                            bonus -= 0.15
 
-                    else:
-                        bonus += 0.02 * len(enemies)
+                    if d <= 2:
+                        bonus += 0.01 * len(enemies)
 
                 # UCT ALGORITHM
                 exploitation_value = child_node.win_count / child_node.visits
@@ -447,7 +405,7 @@ class MCTS:
             if len(moves) == 0:
                 break
 
-            good_moves = []
+            good_moves = [Move(0, 0, 0, True)]
             for move in moves:
                 current_board[move.get_key()] = current_player
                 d = get_diameter(current_board, move.get_key(), {}, False)
@@ -456,11 +414,11 @@ class MCTS:
                 if d < 5:
                     good_moves.append(move)
 
-            if len(good_moves) == 0:
+            random_move = random.choice(good_moves)
+            if random_move.p:
                 pass_length += 1
             else:
                 pass_length = 0
-                random_move = random.choice(good_moves)
                 current_board[random_move.get_key()] = current_player
 
             current_player = (current_player + 1) % 3
@@ -535,7 +493,7 @@ class MCTS:
             # print("Back Propagation")
             self.back_propagation(selected_node_index, simulation_result)
 
-            if self.iterations >= 20 and time.time() - start_time >= self.max_time:
+            if self.iterations >= 30 and time.time() - start_time >= self.max_time:
                 break
 
                 # print(time.time() - self.start_time)
@@ -660,12 +618,13 @@ class MCTS:
 
 TABLE = {1: 0, 2: 0, 3: 1, 4: 3, 5: 0}
 
-EXPLORATION_CONSTANT = 0.3
+EXPLORATION_CONSTANT = 0.5
 MAX_DEPTH = 30
 MAX_ITERATIONS = 10000
 
 set_node_coordinates()
 NEIGHBOR_LIST = dict(zip(coordinates, [SELECT_VALID(ALL_NEIGHBOR(*node)) for node in coordinates]))
+
 
 tree = Tree()
 tree.graph.append(Node(-1, Move(0, 0, 0, True), 0))  # Root node
@@ -674,17 +633,19 @@ real_board = {}
 
 mcts_engine = MCTS()
 
-current_time = GAME_TIME - 6
-move_count = 0
+
+current_time = GAME_TIME - 9
+moves = 0
 
 predicted_total_moves = 45
 start_time = 0
 
-# current_time -= time.time() - init_time
+
+current_time -= time.time() - init_time
 
 
-def strategy(board_copy, player):
-    global current_time, move_count, predicted_total_moves, start_time
+def strategy_dev3(board_copy, player):
+    global current_time, moves, predicted_total_moves, start_time
 
     start_time = time.time()
 
@@ -696,7 +657,7 @@ def strategy(board_copy, player):
     mcts_engine.board = board_copy
     mcts_engine.player = player
 
-    allocated_time = max(current_time / max(12, (predicted_total_moves - move_count)) - 0.05, 0.1)
+    allocated_time = max(current_time / max(12, (predicted_total_moves - moves)) - 0.05, 0.2)
     # print(allocated_time, current_time)
 
     mcts_engine.max_time = allocated_time
@@ -724,7 +685,7 @@ def strategy(board_copy, player):
     # print(best_node.win_count, best_node.visits, best_node.win_count / best_node.visits)
     # print(move.get_key(), move.p)
 
-    move_count += 1
+    moves += 1
 
     current_time -= (time.time() - start_time)
 
