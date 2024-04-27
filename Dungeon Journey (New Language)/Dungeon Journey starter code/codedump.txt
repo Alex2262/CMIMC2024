@@ -1,59 +1,41 @@
-0,0 1,1,R,_
-0,1 1,2,U,_
-0,2 5,3,L,_
-0,3 2,4,L,_
-0,4 6,5,D,_
-0,5 3,6,D,_
-0,6 7,7,R,_
-0,7 4,8,R,_
-0,8 12,5,_,R
-12,1 8,_,U,R
-
-1,0 _,1,U,U
-2,0 _,2,L,L
-3,0 _,3,D,D
-4,0 _,4,R,R
-
-5,0 9,1,_,U
-9,0 2,5,_,L
+% We want to achieve a pattern where both alice and bob find the given 1,
+% then Alice will go back to the start, mark down y spots (y is the place where Bob's 1 is at)
+% then for each mark, Alice will loop through x times with Bob moving right from the start
 
 
-6,0 11,2,_,L
-11,0 3,6,_,D
+% Bob moves down first
+0,0 3,_,_,D
 
+% Here we achieve some funny alternating movement so that Alice and Bob can reach their 1's
+% Note we cannot use 0,0 anymore, so we must alternate
 
-7,0 13,3,_,D
-13,0 4,7,_,R
+% They also leave a trail of 2's
+3,0 2,3,L,_
+0,3 3,2,_,R
 
+3,1 _,4,R,_
+2,4 _,_,R,_
+0,4 4,_,R,_
+1,4 4,2,R,_
+0,2 3,3,L,_
 
-8,0 15,4,_,R
-15,0 16,8,_,U
-16,0 _,1,R,R
+4,3 _,_,L,_
+2,3 _,_,L,_
 
+3,3 1,0,R,_
+2,0 _,2,R,R
+% 4,2 _,_,_,R
+4,0 4,4,R,_
+4,4 4,4,R,_
+3,4 2,1,_,_
+2,1 _,1,L,_
 
+4,1 3,2,L,_
 
-1,1 2,2,_,_
-1,2 2,2,_,_
-1,3 2,2,_,_
-1,4 2,2,_,_
-1,5 2,2,_,_
-1,6 2,2,_,_
-1,7 2,2,_,_
-1,8 2,2,_,_
+4,2 _,_,L,_
+2,2 _,_,L,_
 
+1,2 _,_,R,R
 
-2,1 2,2,_,_
-3,1 2,2,_,_
-4,1 2,2,_,_
-5,1 2,2,_,_
-6,1 2,2,_,_
-7,1 2,2,_,_
-8,1 2,2,_,_
-9,1 2,2,_,_
-11,1 2,2,_,_
-13,1 2,2,_,_
-15,1 2,2,_,_
-16,1 2,2,_,_
-
-
-2,2 2,2,_,_
+% 2,4 2,1,L,_
+% 1,1 1,1,L,_
