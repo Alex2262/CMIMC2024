@@ -6,8 +6,9 @@ import math
 from bot.strategy import strategy
 from bot.strategy_dev import strategy_dev
 from bot.strategy_dev3 import strategy_dev3
+#from bot.strategy_dev_policy import strategy_dev_policy
 from bot.greedy_bot_move import greedy_bot_move
-from bot.random_bot_move import random_bot_move
+#from bot.random_bot_move import random_bot_move
 
 from hex_func import run_game_process
 
@@ -116,8 +117,8 @@ def run_thread(thread_id, max_games, results, bot_list_1, bot_list_2, full_print
 def main():
     results = Results()
 
-    bot_list_1 = {"strategy_dev": strategy_dev, "strategy": strategy, "third_player": strategy_dev3}
-    bot_list_2 = {"strategy": strategy, "strategy_dev": strategy_dev, "third_player": strategy_dev3}
+    bot_list_1 = {"strategy_dev": strategy_dev, "strategy": strategy, "third_player": greedy_bot_move}
+    bot_list_2 = {"strategy": strategy, "strategy_dev": strategy_dev, "third_player": greedy_bot_move}
 
     threads = []
 

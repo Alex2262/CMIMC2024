@@ -3,7 +3,7 @@ import time
 
 import math
 
-GAME_TIME = 10
+GAME_TIME = 7
 
 init_time = time.time()
 
@@ -19,7 +19,7 @@ class Move:
         self.p = passing
 
     def get_key(self):
-        return (self.x, self.y, self.z)
+        return self.x, self.y, self.z
 
 
 class Node:
@@ -130,7 +130,7 @@ def get_diameter(board, start_node, visit: dict, use_visit):
                 return 4  # this is a shape x - x - x - x
                 #                     x   x
         return 5  # diameter is 5 otherwise
-    # For the larger(>6) ones, diameter must be larger than 5 so we just return 5
+    # For the larger(>6) ones, diameter must be larger than 5, so we just return 5
     return 5
 
 
@@ -218,10 +218,9 @@ class MCTS:
         self.root_node_index = 0
         self.max_time = 1
 
-    '''
-    def get_result(self, current_board):
+    def get_result(self):
 
-        score_dict = score(current_board)
+        score_dict = score(self.board)
         result = [0, 0, 0]
 
         small = min(score_dict.values())
@@ -229,7 +228,7 @@ class MCTS:
 
         if small == large:
             # print(score_dict, result)
-            return [0.5, 0.5, 0.5]
+            return [1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0]
 
         count_large = 0
         count_small = 0
@@ -241,13 +240,14 @@ class MCTS:
                 count_small += 1
 
         if count_large == 1:
+            small_score = 0.0 if count_small == 1 else 1.0 / 6.0
             for i in range(3):
                 if score_dict[i] == large:
-                    result[i] = 1
+                    result[i] = 2.0 / 3.0
                 elif score_dict[i] == small:
-                    result[i] = 0.5 - (0.5 / count_small)
+                    result[i] = small_score
                 else:
-                    result[i] = 0.5
+                    result[i] = 1.0 / 3.0
 
             # print(score_dict, result)
 
@@ -256,7 +256,7 @@ class MCTS:
         # Two players must be tied here for first
         for i in range(3):
             if score_dict[i] == large:
-                result[i] += 0.75
+                result[i] += 0.5
             else:
                 result[i] = 0
 
@@ -298,6 +298,7 @@ class MCTS:
                 result[i] = 0.3
 
         return result
+    '''
 
     def descend_to_root(self, node_index):
         while node_index != self.root_node_index:
@@ -373,7 +374,7 @@ class MCTS:
                             if d > old_diameter:
                                 bonus += 0.1
                                 if d == 4 or empty_count >= 1:
-                                    bonus += 0.2
+                                    bonus += 0.3
 
                             elif d <= old_diameter:
                                 bonus -= 0.1
@@ -425,8 +426,9 @@ class MCTS:
 
         # node = self.tree.graph[node_index]
 
-        current_player = self.player
-        current_board = self.board.copy()
+        # current_board = self.board.copy()
+
+        moves_made = []
 
         pass_length = tree.graph[node_index].pass_length
 
@@ -436,36 +438,40 @@ class MCTS:
             if pass_length >= 3:
                 break
 
-            moves = []
-            for coord in coordinates:
-                if coord in current_board:
-                    continue
-
-                moves.append(Move(coord[0], coord[1], coord[2], False))
-
-            # Can only keep passing from here, so just break anyway
-            if len(moves) == 0:
+            if len(self.board) == 96:
                 break
 
-            good_moves = []
-            for move in moves:
-                current_board[move.get_key()] = current_player
-                d = get_diameter(current_board, move.get_key(), {}, False)
-                del current_board[move.get_key()]
+            moves = []
+            for coord in coordinates:
+                if coord in self.board:
+                    continue
+
+                move = Move(coord[0], coord[1], coord[2], False)
+                self.board[move.get_key()] = self.player
+                d = get_diameter(self.board, move.get_key(), {}, False)
+                del self.board[move.get_key()]
 
                 if d < 5:
-                    good_moves.append(move)
+                    moves.append(move)
 
-            if len(good_moves) == 0:
+            if len(moves) == 0:
                 pass_length += 1
+                moves_made.append(None)
             else:
                 pass_length = 0
-                random_move = random.choice(good_moves)
-                current_board[random_move.get_key()] = current_player
+                random_move = random.choice(moves)
+                self.board[random_move.get_key()] = self.player
+                moves_made.append(random_move)
 
-            current_player = (current_player + 1) % 3
+            self.player = (self.player + 1) % 3
 
-        return self.get_result(current_board)
+        for i in range(len(moves_made) - 1, -1, -1):
+            if moves_made[i] is not None:
+                del self.board[moves_made[i].get_key()]
+
+            self.player = ((self.player - 1) + 3) % 3
+
+        return self.get_result()
 
     def back_propagation(self, node_index, result):
         current_node_index = node_index
@@ -511,7 +517,7 @@ class MCTS:
             n_children = selected_node.children_end - \
                          selected_node.children_start
 
-            if (n_children <= 0 and selected_node.visits >= 2) or selected_node_index == self.root_node_index:
+            if n_children <= 0 and (selected_node.visits >= 1 or selected_node_index == self.root_node_index):
                 self.expansion(selected_node_index)
 
             # New leaf selected node index, make the corresponding move
@@ -527,7 +533,7 @@ class MCTS:
                 self.player = (self.player + 1) % 3
 
             if selected_node.pass_length >= 3:
-                simulation_result = self.get_result(self.board)
+                simulation_result = self.get_result()
             else:
                 simulation_result = self.simulation(selected_node_index)
             # print("Simulation Result:", simulation_result)
@@ -661,7 +667,7 @@ class MCTS:
 TABLE = {1: 0, 2: 0, 3: 1, 4: 3, 5: 0}
 
 EXPLORATION_CONSTANT = 0.3
-MAX_DEPTH = 30
+MAX_DEPTH = 100
 MAX_ITERATIONS = 10000
 
 set_node_coordinates()
@@ -674,7 +680,7 @@ real_board = {}
 
 mcts_engine = MCTS()
 
-current_time = GAME_TIME - 6
+current_time = GAME_TIME - 3
 move_count = 0
 
 predicted_total_moves = 45
