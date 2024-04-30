@@ -1,21 +1,22 @@
 import random
 from strategy import Planner
+import math
 
 """
 Modify the parameters below for different tasks
 """
 
 # Task 1: p = 5, bd = 0.25
-# p = 5  # number of cities
-# bd = 0.25  # bomb density
+p = 5  # number of cities
+bd = 0.25  # bomb density
 
 # Task 2: p = 5, bd = 0.1
 # p = 5 # number of cities
 # bd = 0.1 # bomb density
 
 # Task 3: p = 1, bd = 0.25
-p = 1 # number of cities
-bd = 0.25 # bomb density
+# p = 1 # number of cities
+# bd = 0.25 # bomb density
 
 # Task 4: p = 1, bd = 0.1
 # p = 1 # number of cities
@@ -200,5 +201,12 @@ def dfsComponent(x, y, n, roads, visRoads):
 
 soln = Planner()
 pairs, bombs = generateSetup(n, p, bd)
+scoresA = []
+for i in range(20):
+    scoresA.append(runGrader(soln, pairs, bombs))
+print(scoresA)
+temp = 1.00
+for i in scoresA:
+    temp *= i
 
-runGrader(soln, pairs, bombs)
+print(math.pow(temp, 0.05))
