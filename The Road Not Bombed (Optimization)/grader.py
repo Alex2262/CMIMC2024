@@ -14,12 +14,12 @@ Modify the parameters below for different tasks
 # bd = 0.1 # bomb density
 
 # Task 3: p = 1, bd = 0.25
-# p = 1 # number of cities
-# bd = 0.25 # bomb density
+p = 1 # number of cities
+bd = 0.25 # bomb density
 
 # Task 4: p = 1, bd = 0.1
-p = 1 # number of cities
-bd = 0.1 # bomb density
+# p = 1 # number of cities
+# bd = 0.1 # bomb density
 
 rng_grader = random.Random()  # use this for generating fixed setup
 rng_grader.seed(19260817)
