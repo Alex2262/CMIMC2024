@@ -6,16 +6,16 @@ Modify the parameters below for different tasks
 """
 
 # Task 1: p = 5, bd = 0.25
-p = 5  # number of cities
-bd = 0.25  # bomb density
+# p = 5  # number of cities
+# bd = 0.25  # bomb density
 
 # Task 2: p = 5, bd = 0.1
 # p = 5 # number of cities
 # bd = 0.1 # bomb density
 
 # Task 3: p = 1, bd = 0.25
-# p = 1 # number of cities
-# bd = 0.25 # bomb density
+p = 1 # number of cities
+bd = 0.25 # bomb density
 
 # Task 4: p = 1, bd = 0.1
 # p = 1 # number of cities
@@ -45,11 +45,14 @@ def runGrader(soln, pairs, bombs):
         queryOutputList.append(output)
 
         qloc -= 1
+        
 
         if score < bestScore:
             bestScore = score
             if VERBOSE:  # Draw state whenever a better score is achieved
+                pass
                 drawState(n, qloc, bombs, pairs, roadplan, score, queryOutputList)
+        drawState(n, qloc, bombs, pairs, roadplan, score, queryOutputList)
     if qloc == 0 and LAST:
         drawState(n, qloc, bombs, pairs, roadplan, score, queryOutputList)
     print(f"Best score: {bestScore}")
@@ -58,7 +61,13 @@ def runGrader(soln, pairs, bombs):
 
 def drawState(n, q, bombs, pairs, plan, score, queryList):
     mapp = [[" "] * n for i in range(n)]
-
+    if (queryList[-1] == False):
+        print("\n fail")
+        #return
+    else:
+        print("\n passed")
+    # for i in plan:
+    #     print(plan)
     for i in range(n):
         for j in range(n):
             if bombs[i][j] == 1:
