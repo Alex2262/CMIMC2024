@@ -75,12 +75,13 @@ class Planner:
             #print("randomizer" + str(q))
             # take the most recent successful plan
             # remove each road with small probability
+            # newPlan = [[0] * n for i in range(n)]
             for i in range(n):
                 for j in range(n):
                     newPlan[i][j] = self.bestPlan[i][j]
                     if newPlan[i][j] == 1:
                         rando = random.uniform(0, 1)
-                        if rando < 0 * self.yeetProbability + 0.075:
+                        if rando < 0 * self.yeetProbability + 0.07:
                             newPlan[i][j] = 0
             marks = []
             for i in range(n):
@@ -285,19 +286,71 @@ class Planner:
             if (queryOutputs[-1] == True):
                 self.recentFlood += 1
             done = False #finding non blacklisted road
-            
+            for nEdge in range(0, 4, 1):
+                if nEdge == 0:
+                    for i in range(n):
+                        if newPlan[i][0] == 1 and not done:
+                            if ([i, 0] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = i
+                                self.t4Recent[0][1] = 0
+                                newPlan[i][0] = 0
+                                done = True
+                                break
+                if nEdge == 1:
+                    for i in range(n):
+                        if newPlan[0][i] == 1 and not done:
+                            if ([0, i] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = 0
+                                self.t4Recent[0][1] = i
+                                newPlan[0][i] = 0
+                                done = True
+                                break
+                if nEdge == 2:
+                    for i in range(n):
+                        if newPlan[i][15] == 1 and not done:
+                            if ([i, 15] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = i
+                                self.t4Recent[0][1] = 15
+                                newPlan[i][15] = 0
+                                done = True
+                                break
+                if nEdge == 3:
+                    for i in range(n):
+                        if newPlan[15][i] == 1 and not done:
+                            if ([15, i] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = 15
+                                self.t4Recent[0][1] = i
+                                newPlan[15][i] = 0
+                                done = True
+                                break
             
 
-            for i in range(n-1, -1, -1):
+            for i in range(n):
                 
-                for j in range(n-1, -1, -1):
+                for j in range(n):
                     
                     if newPlan[i][j] == 1 and not done:
                         if ([i, j] in self.t4Blacklist):
                             # print("yyee")
                             continue
                         else:
-
+                            x = random
                             self.t4Recent[0][0] = i
                             self.t4Recent[0][1] = j
                             newPlan[i][j] = 0
@@ -325,26 +378,7 @@ class Planner:
         return self.sentPlan
 
     def task2(self, q, queryOutputs):
-        # return self.task1(q, queryOutputs)
-        l = len(queryOutputs)
-
-        if l > 0 and queryOutputs[l - 1]:
-            self.bestPlan = self.sentPlan
-        n = self.n
-        newPlan = [[22] * n for i in range(n)]
-
-        # take the most recent successful plan
-        # remove each road with small probability
-        for i in range(n):
-            for j in range(n):
-                newPlan[i][j] = self.bestPlan[i][j]
-                if newPlan[i][j] == 1:
-                    rando = random.uniform(0, 1)
-                    if rando < 0.06:
-                        newPlan[i][j] = 0
-
-        self.sentPlan = newPlan
-        return self.sentPlan
+        return self.task1(q, queryOutputs)
 
     def task3(self, q, queryOutputs):
         return self.task1(q, queryOutputs)
@@ -382,7 +416,14 @@ class Planner:
             
             
         n = self.n
-        newPlan = [[-20] * n for i in range(n)]
+        newPlan = []
+        for i in range(n):
+            newPlan.append([])
+            for j in range(n):
+                newPlan[-1].append(0)
+        for i in range(n):
+            for j in range(n):
+                newPlan[i][j] = self.bestPlan[i][j]
         #for i in self.bestPlan:
             #if (q > 40):
 
@@ -397,8 +438,22 @@ class Planner:
                     newPlan[i][j] = self.bestPlan[i][j]
                     if newPlan[i][j] == 1:
                         rando = random.uniform(0, 1)
-                        if rando < 0 * self.yeetProbability + 0.075:
+                        if rando < 0 * self.yeetProbability + 0.076:
                             newPlan[i][j] = 0
+            marks = []
+            for i in range(n):
+                for j in range(n):
+                    if (0 < i and i < n-1 and 0 < j and j < n-1):
+                        neighbors = int((newPlan[i+1][j] == 1) + (newPlan[i][j+1] == 1) + (newPlan[i-1][j] == 1) + (newPlan[i][j-1] == 1))
+                        if (neighbors <= 1):
+                            marks.append([i,j])
+            for a in marks:
+                pass
+                #newPlan[a[0]][a[1]] = 0
+
+            
+
+
             self.sentPlan = newPlan
         
             return self.sentPlan
@@ -486,6 +541,33 @@ class Planner:
             return self.sentPlan
 
         elif (self.found == 2):
+            marks = []
+            kc = 0
+            for i in range(n):
+                for j in range(n):
+                    if (0 < i and i < n-1 and 0 < j and j < n-1):
+                        neighbors = 0
+                        if (newPlan[i+1][j] == 1):
+                            neighbors += 1
+                        if (newPlan[i][j+1] == 1):
+                            neighbors += 1
+                        if (newPlan[i-1][j] == 1):
+                            neighbors += 1
+                        if (newPlan[i][j-1] == 1):
+                            neighbors += 1
+                        
+                        if (neighbors <= 1):
+                            newPlan[i][j] = 0
+                            kc += 1
+            for a in marks:
+                pass
+                #newPlan[a[0]][a[1]] = 0
+            # if (kc >= 5):
+            #     for a in newPlan:
+            #         print(a)
+            #         print("--3---33---\n")
+
+
             #print(str(self.found) + "debugger")
             if self.recentFlood == 5 and queryOutputs[-1] == True:
                 #begin floodfilling
@@ -560,18 +642,74 @@ class Planner:
 
             if (queryOutputs[-1] == True):
                 self.recentFlood += 1
-            done = False
+            done = False #finding non blacklisted road
+            for nEdge in range(0, 4, 1):
+                if nEdge == 0:
+                    for i in range(n):
+                        if newPlan[i][0] == 1 and not done:
+                            if ([i, 0] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
 
-            for i in range(n-1, -1, -1):
+                                self.t4Recent[0][0] = i
+                                self.t4Recent[0][1] = 0
+                                newPlan[i][0] = 0
+                                done = True
+                                break
+                if nEdge == 1:
+                    for i in range(n):
+                        if newPlan[0][i] == 1 and not done:
+                            if ([0, i] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = 0
+                                self.t4Recent[0][1] = i
+                                newPlan[0][i] = 0
+                                done = True
+                                break
+                if nEdge == 2:
+                    for i in range(n):
+                        if newPlan[i][15] == 1 and not done:
+                            if ([i, 15] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = i
+                                self.t4Recent[0][1] = 15
+                                newPlan[i][15] = 0
+                                done = True
+                                break
+                if nEdge == 3:
+                    for i in range(n):
+                        if newPlan[15][i] == 1 and not done:
+                            if ([15, i] in self.t4Blacklist):
+                                # print("yyee")
+                                continue
+                            else:
+
+                                self.t4Recent[0][0] = 15
+                                self.t4Recent[0][1] = i
+                                newPlan[15][i] = 0
+                                done = True
+                                break
+            
+
+            for i in range(n):
                 
-                for j in range(n-1, -1, -1):
+                for j in range(n):
                     
                     if newPlan[i][j] == 1 and not done:
                         if ([i, j] in self.t4Blacklist):
                             # print("yyee")
                             continue
                         else:
-
+                            x = random.uniform(0, 1)
+                            if (x > 0.83):
+                                continue
                             self.t4Recent[0][0] = i
                             self.t4Recent[0][1] = j
                             newPlan[i][j] = 0
@@ -608,8 +746,8 @@ class Planner:
             return self.task1(q, queryOutputs)
         
         if len(self.pairs) == 1 and self.bd == 0.25:
-            return self.task1(q, queryOutputs)
+            return self.task4(q, queryOutputs)
         
         if len(self.pairs) == 1 and self.bd == 0.1:
-            return self.task1(q, queryOutputs)
+            return self.task4(q, queryOutputs)
         
