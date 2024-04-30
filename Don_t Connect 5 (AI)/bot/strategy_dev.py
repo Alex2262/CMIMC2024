@@ -3,7 +3,7 @@ import time
 
 import math
 
-GAME_TIME = 7
+GAME_TIME = 30
 
 init_time = time.time()
 
@@ -74,31 +74,6 @@ def set_node_coordinates():
                     coordinates.append((x, y, z))
 
 
-def dfs_empties(board, current_node, visited: set, empty_visited: set):
-    visited.add(current_node)
-
-    empty = 0
-    player = board[current_node]
-    for neighbor in NEIGHBOR_LIST[current_node]:
-
-        if neighbor not in board:
-            if neighbor not in empty_visited:
-                empty_visited.add(neighbor)
-                empty += 1
-
-            continue
-
-        if board[neighbor] != player:
-            continue
-
-        if neighbor in visited:
-            continue
-
-        empty += dfs_empties(board, neighbor, visited, empty_visited)
-
-    return empty
-
-
 def get_diameter(board, start_node, visit: dict, use_visit):
     def neighbors(node):
         # return SELECT_VALID(ALL_NEIGHBOR(*(node)))
@@ -129,6 +104,15 @@ def get_diameter(board, start_node, visit: dict, use_visit):
         return max_path_length + 1
 
     player = board[start_node]
+
+    '''
+    try:
+        player = board[start_node]
+    except Exception as exc:
+        print("node empty?")
+        print(exc)
+        return 0
+    '''
 
     connected = dict()
     con(start_node)
@@ -351,42 +335,33 @@ class MCTS:
                 move = child_node.last_move
 
                 neighbors = SELECT_VALID(ALL_NEIGHBOR(*move.get_key()))
+                empty_count = 0
 
                 adjacent_friend = None
-                adjacent_empty_count = 0
-                adjacent_enemy_count = 0
+                enemies = []
 
                 for neighbor in neighbors:
                     if neighbor not in self.board:
-                        adjacent_empty_count += 1
+                        empty_count += 1
                         continue
 
                     if self.board[neighbor] == self.player:
                         adjacent_friend = neighbor
 
                     else:
-                        adjacent_enemy_count += 1
+                        enemies.append(neighbor)
 
                 coef = 0.8
                 bonus = -0.3
 
                 if not move.p:
-                    visited = set({})
-                    empty_visited = set({})
-
                     self.board[move.get_key()] = self.player
                     d = get_diameter(self.board, move.get_key(), {}, False)
-                    total_empty_count = dfs_empties(self.board, move.get_key(), visited, empty_visited)
-
-                    # print("TEC: ", total_empty_count, adjacent_empty_count)
-                    # print_board(self.board, move)
-                    # time.sleep(0.00001)
-
                     del self.board[move.get_key()]
 
                     coef = 1
 
-                    bonus = 0.05 * adjacent_empty_count
+                    bonus = 0.05 * empty_count
 
                     if d >= 5:
                         coef = 0.5
@@ -398,20 +373,16 @@ class MCTS:
                         if old_diameter <= 3:
                             if d > old_diameter:
                                 bonus += 0.1
-                                if d == 4:
-                                    bonus += 0.35
-                                elif d == 3 and total_empty_count >= 1:
-                                    bonus += 0.25 + 0.08 * min((total_empty_count - 1), 3)
-                                elif d <= 2 and total_empty_count >= 2:
-                                    bonus += 0.2 + 0.05 * min(total_empty_count - 2, 3)
+                                if d == 4 or empty_count >= 1:
+                                    bonus += 0.2
 
                             elif d <= old_diameter:
                                 bonus -= 0.1
                         else:
-                            bonus -= min(0.2 + 0.01 * total_empty_count - 0.03 * adjacent_enemy_count, 0)
+                            bonus -= min(0.2 + 0.01 * empty_count - 0.03 * len(enemies), 0)
 
                     else:
-                        bonus += 0.02 * adjacent_enemy_count
+                        bonus += 0.02 * len(enemies)
 
                 # UCT ALGORITHM
                 exploitation_value = child_node.win_count / child_node.visits

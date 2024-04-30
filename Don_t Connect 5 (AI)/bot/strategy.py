@@ -3,7 +3,7 @@ import time
 
 import math
 
-GAME_TIME = 7
+GAME_TIME = 30
 
 init_time = time.time()
 
@@ -370,16 +370,13 @@ class MCTS:
                     elif adjacent_friend is not None:
 
                         old_diameter = get_diameter(self.board, adjacent_friend, {}, False)
-                        if old_diameter <= 3:
-                            if d > old_diameter:
-                                bonus += 0.1
-                                if d == 4 or empty_count >= 1:
-                                    bonus += 0.3
+                        if d > old_diameter:
+                            bonus += 0.1
+                            if d == 4 or empty_count >= 1:
+                                bonus += 0.3
 
-                            elif d <= old_diameter:
-                                bonus -= 0.1
                         else:
-                            bonus -= min(0.2 + 0.01 * empty_count - 0.03 * len(enemies), 0)
+                            bonus -= min(0.1 + 0.03 * min(empty_count, 5) - 0.03 * len(enemies), 0)
 
                     else:
                         bonus += 0.02 * len(enemies)
@@ -668,7 +665,7 @@ TABLE = {1: 0, 2: 0, 3: 1, 4: 3, 5: 0}
 
 EXPLORATION_CONSTANT = 0.3
 MAX_DEPTH = 100
-MAX_ITERATIONS = 10000
+MAX_ITERATIONS = 100000
 
 set_node_coordinates()
 NEIGHBOR_LIST = dict(zip(coordinates, [SELECT_VALID(ALL_NEIGHBOR(*node)) for node in coordinates]))
@@ -680,10 +677,10 @@ real_board = {}
 
 mcts_engine = MCTS()
 
-current_time = GAME_TIME - 3
+current_time = GAME_TIME - 2
 move_count = 0
 
-predicted_total_moves = 45
+predicted_total_moves = 40
 start_time = 0
 
 # current_time -= time.time() - init_time
@@ -702,7 +699,7 @@ def strategy(board_copy, player):
     mcts_engine.board = board_copy
     mcts_engine.player = player
 
-    allocated_time = max(current_time / max(12, (predicted_total_moves - move_count)) - 0.05, 0.1)
+    allocated_time = max(current_time / max(10, (predicted_total_moves - move_count)) - 0.05, 0.1)
     # print(allocated_time, current_time)
 
     mcts_engine.max_time = allocated_time
