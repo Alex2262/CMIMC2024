@@ -3,7 +3,7 @@ import time
 
 import math
 
-GAME_TIME = 6
+GAME_TIME = 30
 
 init_time = time.time()
 

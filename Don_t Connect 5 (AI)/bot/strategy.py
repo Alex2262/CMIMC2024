@@ -1,9 +1,19 @@
+
+"""
+
+THIS IS THE MAIN DC5 STRATEGY FILE
+
+ALL OTHER STRATEGY FILES WERE MOST LIKELY FOR TESTING PURPOSES
+
+"""
+
+
 import random
 import time
 
 import math
 
-GAME_TIME = 6
+GAME_TIME = 30
 
 init_time = time.time()
 
